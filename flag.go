@@ -53,7 +53,7 @@ type tFlag struct {
 	Help    string
 }
 
-func Fn[T Constraint](val *T, short Short, def T, help Help) tFlag {
+func F[T Constraint](val *T, short Short, def T, help Help) tFlag {
 	shortStr := ""
 	if short != 0 {
 		shortStr = string(short)
