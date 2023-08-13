@@ -42,15 +42,33 @@ type Constraint interface {
 		uint8
 }
 
-type F[T Constraint] struct {
-	T       *T
-	Default T
+type Name string
+type Short rune
+type Help string
+
+type tFlag struct {
+	T       any
+	Default any
 	Name    string
 	Short   string
 	Help    string
 }
 
-func (f F[T]) PFlag() *pflag.Flag {
+func Fn[T Constraint](val *T, name Name, short Short, def T, help Help) tFlag {
+	shortStr := ""
+	if short != 0 {
+		shortStr = string(short)
+	}
+	return tFlag{
+		T:       val,
+		Default: def,
+		Name:    string(name),
+		Short:   shortStr,
+		Help:    string(help),
+	}
+}
+
+func (f tFlag) PFlag() *pflag.Flag {
 	fs := pflag.NewFlagSet("", 0)
 	switch def := any(f.Default).(type) {
 	case []bool:

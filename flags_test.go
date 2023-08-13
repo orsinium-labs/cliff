@@ -16,16 +16,8 @@ func Test(t *testing.T) {
 	}
 	config := Config{}
 	flags := cliff.Flags("example",
-		cliff.F[string]{
-			Name:    "host",
-			T:       &config.host,
-			Default: "127.0.0.1",
-		},
-		cliff.F[int]{
-			Name:    "port",
-			T:       &config.port,
-			Default: 8080,
-		},
+		cliff.Fn(&config.host, "host", 0, "127.0.0.1", "host to serve on"),
+		cliff.Fn(&config.port, "port", 0, 8080, "port to listen to"),
 	)
 	err := flags.Parse([]string{"--host", "localhost"})
 	is.NoErr(err)
