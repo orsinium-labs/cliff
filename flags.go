@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
+// Flags is a mapping of CLI flag names to the flags.
 type Flags map[string]tFlag
 
 // Parse the given arguments.

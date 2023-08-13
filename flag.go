@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
+// Constraint makes sure that the given type is one of the supported.
 type Constraint interface {
 	[]bool |
 		[]byte |
@@ -42,7 +43,10 @@ type Constraint interface {
 		uint8
 }
 
+// Short is a literal character representing shortcut for a flag.
 type Short rune
+
+// Help is a literal string describing the flag usage.
 type Help string
 
 // Count is an int represented in CLI by repeating the argument N times.
@@ -55,6 +59,7 @@ type BytesHex []byte
 // BytesBase64 is a slice of bytes represented in CLI as a base64-encoded string.
 type BytesBase64 []byte
 
+// tFlag is a private flag representing all infor about a CLI flag except its name.
 type tFlag struct {
 	T       any
 	Default any
@@ -62,6 +67,7 @@ type tFlag struct {
 	Help    string
 }
 
+// F creates a new flag.
 func F[T Constraint](val *T, short Short, def T, help Help) tFlag {
 	shortStr := ""
 	if short != 0 {
@@ -75,6 +81,7 @@ func F[T Constraint](val *T, short Short, def T, help Help) tFlag {
 	}
 }
 
+// pflagAdd adds the flag into the give pflag.FlagSet.
 func (f tFlag) pflagAdd(name string, fs *pflag.FlagSet) {
 	switch def := any(f.Default).(type) {
 	case []bool:
