@@ -11,36 +11,20 @@ import (
 type Constraint interface {
 	[]bool |
 		[]byte |
-		[]float32 |
-		[]float64 |
-		[]int |
-		[]int32 |
-		[]int64 |
+		[]float32 | []float64 |
+		[]int | []int32 | []int64 |
 		[]net.IP |
 		[]string |
 		[]time.Duration |
 		[]uint |
 		bool |
-		float32 |
-		float64 |
-		int |
-		int16 |
-		int32 |
-		int64 |
-		int8 |
-		map[string]int |
-		map[string]int64 |
-		map[string]string |
-		net.IP |
-		net.IPMask |
-		net.IPNet |
+		float32 | float64 |
+		int | int16 | int32 | int64 | int8 |
+		map[string]int | map[string]int64 | map[string]string |
+		net.IP | net.IPMask | net.IPNet |
 		string |
 		time.Duration |
-		uint |
-		uint16 |
-		uint32 |
-		uint64 |
-		uint8
+		uint | uint16 | uint32 | uint64 | uint8
 }
 
 // Short is a literal character representing shortcut for a flag.
