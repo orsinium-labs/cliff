@@ -2,24 +2,17 @@ package cliff
 
 import "github.com/spf13/pflag"
 
-type tFlagSet struct {
-	name  string
-	flags []tFlag
+type Flags map[string]tFlag
+
+func (fs Flags) Parse(args []string) error {
+	pfs := fs.PFlagSet(args[0])
+	return pfs.Parse(args[1:])
 }
 
-func Flags(name string, flags ...tFlag) tFlagSet {
-	return tFlagSet{name, flags}
-}
-
-func (fs tFlagSet) Parse(args []string) error {
-	pfs := fs.PFlagSet()
-	return pfs.Parse(args)
-}
-
-func (fs tFlagSet) PFlagSet() pflag.FlagSet {
-	pfs := pflag.NewFlagSet(fs.name, pflag.ContinueOnError)
-	for _, f := range fs.flags {
-		f.pflagAdd(pfs)
+func (fs Flags) PFlagSet(name string) pflag.FlagSet {
+	pfs := pflag.NewFlagSet(name, pflag.ContinueOnError)
+	for name, f := range fs {
+		f.pflagAdd(name, pfs)
 	}
 	return *pfs
 }

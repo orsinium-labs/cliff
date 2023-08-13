@@ -16,12 +16,13 @@ func Test(t *testing.T) {
 		https bool
 	}
 	config := Config{}
-	flags := cliff.Flags("example",
-		cliff.Fn(&config.host, "host", 'h', "127.0.0.1", "host to serve on"),
-		cliff.Fn(&config.port, "port", 'p', 8080, "port to listen to"),
-		cliff.Fn(&config.https, "https", 0, true, "force https"),
-	)
-	err := flags.Parse([]string{"--host", "localhost"})
+	flags := cliff.Flags{
+		"host":  cliff.Fn(&config.host, 'h', "127.0.0.1", "host to serve on"),
+		"port":  cliff.Fn(&config.port, 'p', 8080, "port to listen to"),
+		"https": cliff.Fn(&config.https, 0, true, "force https"),
+	}
+	args := []string{"example", "--host", "localhost"}
+	err := flags.Parse(args)
 	is.NoErr(err)
 	expected := Config{host: "localhost", port: 8080, https: true}
 	is.Equal(config, expected)
