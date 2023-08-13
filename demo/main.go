@@ -14,13 +14,13 @@ type Config struct {
 }
 
 func main() {
-	config := Config{}
-	flags := cliff.Flags{
-		"host":  cliff.F(&config.host, 0, "127.0.0.1", "host to serve on"),
-		"port":  cliff.F(&config.port, 'p', 8080, "port to listen to"),
-		"https": cliff.F(&config.https, 0, true, "force https"),
-	}
-	err := flags.Parse(os.Stderr, os.Args)
+	config, err := cliff.Parse(os.Stderr, os.Args, func(c *Config) cliff.Flags {
+		return cliff.Flags{
+			"host":  cliff.F(&c.host, 0, "127.0.0.1", "host to serve on"),
+			"port":  cliff.F(&c.port, 'p', 8080, "port to listen to"),
+			"https": cliff.F(&c.https, 0, true, "force https"),
+		}
+	})
 	cliff.HandleError(err)
 	fmt.Printf("%#v\n", config)
 }
