@@ -16,8 +16,8 @@ func MustParse[T any](stderr io.Writer, args []string, init func(c *T) Flags) T 
 
 func Parse[T any](stderr io.Writer, args []string, init func(c *T) Flags) (T, error) {
 	var config T
-	fs := init(&config)
-	err := fs.Parse(stderr, args)
+	flags := init(&config)
+	err := flags.Parse(stderr, args)
 	return config, err
 }
 
