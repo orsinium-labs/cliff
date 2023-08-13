@@ -1,6 +1,11 @@
 package cliff
 
-import "github.com/spf13/pflag"
+import (
+	"fmt"
+	"os"
+
+	"github.com/spf13/pflag"
+)
 
 type Flags map[string]tFlag
 
@@ -15,4 +20,15 @@ func (fs Flags) PFlagSet(name string) pflag.FlagSet {
 		f.pflagAdd(name, pfs)
 	}
 	return *pfs
+}
+
+func HandleError(err error) {
+	if err == nil {
+		return
+	}
+	if err == pflag.ErrHelp {
+		os.Exit(0)
+	}
+	fmt.Println(err)
+	os.Exit(2)
 }

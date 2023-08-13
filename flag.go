@@ -42,7 +42,6 @@ type Constraint interface {
 		uint8
 }
 
-type Name string
 type Short rune
 type Help string
 
