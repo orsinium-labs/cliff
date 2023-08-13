@@ -45,6 +45,16 @@ type Constraint interface {
 type Short rune
 type Help string
 
+// Count is an int represented in CLI by repeating the argument N times.
+// For example, "-vvv" will be parsed as 3.
+type Count int
+
+// BytesHex is a slice of bytes represented in CLI as a hexadecimal-encoded string.
+type BytesHex []byte
+
+// BytesBase64 is a slice of bytes represented in CLI as a base64-encoded string.
+type BytesBase64 []byte
+
 type tFlag struct {
 	T       any
 	Default any
@@ -76,6 +86,12 @@ func (f tFlag) pflagAdd(name string, fs *pflag.FlagSet) {
 	case []byte:
 		v := any(f.T).(*[]byte)
 		fs.BytesHexVarP(v, name, f.Short, def, f.Help)
+	case BytesHex:
+		v := any(f.T).(*[]byte)
+		fs.BytesHexVarP(v, name, f.Short, def, f.Help)
+	case BytesBase64:
+		v := any(f.T).(*[]byte)
+		fs.BytesBase64VarP(v, name, f.Short, def, f.Help)
 	case []time.Duration:
 		v := any(f.T).(*[]time.Duration)
 		fs.DurationSliceVarP(v, name, f.Short, def, f.Help)
@@ -130,6 +146,9 @@ func (f tFlag) pflagAdd(name string, fs *pflag.FlagSet) {
 	case int:
 		v := any(f.T).(*int)
 		fs.IntVarP(v, name, f.Short, def, f.Help)
+	case Count:
+		v := any(f.T).(*int)
+		fs.CountVarP(v, name, f.Short, f.Help)
 	case []string:
 		v := any(f.T).(*[]string)
 		fs.StringSliceVarP(v, name, f.Short, def, f.Help)

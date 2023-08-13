@@ -20,7 +20,7 @@ func main() {
 		"port":  cliff.F(&config.port, 'p', 8080, "port to listen to"),
 		"https": cliff.F(&config.https, 0, true, "force https"),
 	}
-	err := flags.Parse(os.Args)
+	err := flags.Parse(os.Stderr, os.Args)
 	cliff.HandleError(err)
 	fmt.Printf("%#v\n", config)
 }
