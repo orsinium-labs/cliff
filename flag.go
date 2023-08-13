@@ -68,8 +68,7 @@ func Fn[T Constraint](val *T, name Name, short Short, def T, help Help) tFlag {
 	}
 }
 
-func (f tFlag) PFlag() *pflag.Flag {
-	fs := pflag.NewFlagSet("", 0)
+func (f tFlag) pflagAdd(fs *pflag.FlagSet) {
 	switch def := any(f.Default).(type) {
 	case []bool:
 		v := any(f.T).(*[]bool)
@@ -168,5 +167,4 @@ func (f tFlag) PFlag() *pflag.Flag {
 		v := any(f.T).(*uint)
 		fs.UintVarP(v, f.Name, f.Short, def, f.Help)
 	}
-	return fs.Lookup(f.Name)
 }

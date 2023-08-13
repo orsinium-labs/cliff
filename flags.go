@@ -19,7 +19,7 @@ func (fs tFlagSet) Parse(args []string) error {
 func (fs tFlagSet) PFlagSet() pflag.FlagSet {
 	pfs := pflag.NewFlagSet(fs.name, pflag.ContinueOnError)
 	for _, f := range fs.flags {
-		pfs.AddFlag(f.PFlag())
+		f.pflagAdd(pfs)
 	}
 	return *pfs
 }
