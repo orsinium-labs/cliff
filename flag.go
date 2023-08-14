@@ -2,7 +2,6 @@ package cliff
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"time"
 
@@ -47,15 +46,11 @@ type BytesBase64 []byte
 
 // tPFlag represents all info about a CLI flag except its name.
 type tPFlag struct {
+	baseFlag
 	tar   any    // target where to put the parsed result
 	def   any    // default value to use if flag not specified
 	short string // short alias for the flag
 	help  string // usage message
-
-	depr      string // deprecation message
-	shortDepr string // deprecation message for the shorthand
-	hidden    bool   // don't show the flag in help
-	internal  bool   // a check that the flag is constructed using the constructor
 }
 
 // F creates a new flag.
@@ -69,8 +64,7 @@ func F[T Constraint](val *T, short Short, def T, help Help) Flag {
 		def:      def,
 		short:    shortStr,
 		help:     string(help),
-		depr:     "",
-		internal: true,
+		baseFlag: baseFlag{internal: true},
 	}
 }
 
@@ -100,25 +94,7 @@ func (f tPFlag) AddTo(fs *pflag.FlagSet, name string) error {
 	if err != nil {
 		return err
 	}
-	if f.depr != "" {
-		err = fs.MarkDeprecated(name, f.depr)
-		if err != nil {
-			return fmt.Errorf("mark deprecated: %v", err)
-		}
-	}
-	if f.shortDepr != "" {
-		err = fs.MarkShorthandDeprecated(name, f.shortDepr)
-		if err != nil {
-			return fmt.Errorf("mark short deprecated: %v", err)
-		}
-	}
-	if f.hidden {
-		err = fs.MarkHidden(name)
-		if err != nil {
-			return fmt.Errorf("mark hidden: %v", err)
-		}
-	}
-	return nil
+	return f.setProperties(fs, name)
 }
 
 func (f tPFlag) pflagAddFlag(name string, fs *pflag.FlagSet) error {

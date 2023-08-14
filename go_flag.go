@@ -3,31 +3,27 @@ package cliff
 import (
 	"errors"
 	"flag"
-	"fmt"
 
 	"github.com/spf13/pflag"
 )
 
 // tGoFlag represents all info about a CLI flag except its name.
 type tGoFlag struct {
+	baseFlag
 	flag  flag.Flag
 	short string // short alias for the flag
-
-	depr      string // deprecation message
-	shortDepr string // deprecation message for the shorthand
-	hidden    bool   // don't show the flag in help
-	internal  bool   // a check that the flag is constructed using the constructor
 }
 
-// F creates a new flag.
+// GoFlag creates a new flag from an stdlib [flag.Flag].
 func GoFlag[T Constraint](short Short, flag flag.Flag) Flag {
 	shortStr := ""
 	if short != 0 {
 		shortStr = string(short)
 	}
 	return tGoFlag{
-		flag:  flag,
-		short: shortStr,
+		flag:     flag,
+		short:    shortStr,
+		baseFlag: baseFlag{internal: true},
 	}
 }
 
@@ -56,25 +52,5 @@ func (f tGoFlag) AddTo(fs *pflag.FlagSet, name string) error {
 	pf := pflag.PFlagFromGoFlag(&f.flag)
 	pf.Name = name
 	fs.AddFlag(pf)
-
-	var err error
-	if f.depr != "" {
-		err = fs.MarkDeprecated(name, f.depr)
-		if err != nil {
-			return fmt.Errorf("mark deprecated: %v", err)
-		}
-	}
-	if f.shortDepr != "" {
-		err = fs.MarkShorthandDeprecated(name, f.shortDepr)
-		if err != nil {
-			return fmt.Errorf("mark short deprecated: %v", err)
-		}
-	}
-	if f.hidden {
-		err = fs.MarkHidden(name)
-		if err != nil {
-			return fmt.Errorf("mark hidden: %v", err)
-		}
-	}
-	return nil
+	return f.setProperties(fs, name)
 }
