@@ -26,7 +26,7 @@ func Parse[T any](stderr io.Writer, args []string, init func(c *T) Flags) (T, er
 }
 
 // Flags is a mapping of CLI flag names to the flags.
-type Flags map[string]tFlag
+type Flags map[string]Flag
 
 // Parse the given arguments.
 //
@@ -38,18 +38,24 @@ type Flags map[string]tFlag
 //
 //	flags.Parse(os.Stderr, os.Args)
 func (fs Flags) Parse(stderr io.Writer, args []string) error {
-	pfs := fs.PFlagSet(stderr, args[0])
+	pfs, err := fs.PFlagSet(stderr, args[0])
+	if err != nil {
+		return err
+	}
 	return pfs.Parse(args[1:])
 }
 
 // PFlagSet returns a pflag.FlagSet populated with defined flags.
-func (fs Flags) PFlagSet(stderr io.Writer, name string) *pflag.FlagSet {
+func (fs Flags) PFlagSet(stderr io.Writer, name string) (*pflag.FlagSet, error) {
 	pfs := pflag.NewFlagSet(name, pflag.ContinueOnError)
 	pfs.SetOutput(stderr)
 	for name, f := range fs {
-		f.pflagAdd(name, pfs)
+		err := f.pflagAdd(name, pfs)
+		if err != nil {
+			return nil, fmt.Errorf("add flag %s: %v", name, err)
+		}
 	}
-	return pfs
+	return pfs, nil
 }
 
 // HandleError interrupts the program if an error occured when parsing arguments.

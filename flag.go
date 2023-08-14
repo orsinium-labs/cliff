@@ -1,6 +1,8 @@
 package cliff
 
 import (
+	"errors"
+	"fmt"
 	"net"
 	"time"
 
@@ -44,7 +46,7 @@ type BytesHex []byte
 type BytesBase64 []byte
 
 // Flag represents all info about a CLI flag except its name.
-type tFlag struct {
+type Flag struct {
 	tar   any    // target where to put the parsed result
 	def   any    // default value to use if flag not specified
 	short string // short alias for the flag
@@ -53,20 +55,22 @@ type tFlag struct {
 	depr      string // deprecation message
 	shortDepr string // deprecation message for the shorthand
 	hidden    bool
+	internal  bool // a check that the flag is constructed using the constructor
 }
 
 // F creates a new flag.
-func F[T Constraint](val *T, short Short, def T, help Help) tFlag {
+func F[T Constraint](val *T, short Short, def T, help Help) Flag {
 	shortStr := ""
 	if short != 0 {
 		shortStr = string(short)
 	}
-	return tFlag{
-		tar:   val,
-		def:   def,
-		short: shortStr,
-		help:  string(help),
-		depr:  "",
+	return Flag{
+		tar:      val,
+		def:      def,
+		short:    shortStr,
+		help:     string(help),
+		depr:     "",
+		internal: true,
 	}
 }
 
@@ -75,7 +79,7 @@ func F[T Constraint](val *T, short Short, def T, help Help) tFlag {
 // It won't be shown in help or usage messages
 // and when the user tries to use it,
 // the deprecation message will be shown.
-func (f tFlag) Deprecated(message string) tFlag {
+func (f Flag) Deprecated(message string) Flag {
 	f.depr = message
 	return f
 }
@@ -85,32 +89,48 @@ func (f tFlag) Deprecated(message string) tFlag {
 // The short flag won't be shown in help or usage messages
 // and when the user tries to use it,
 // the deprecation message will be shown.
-func (f tFlag) ShortDeprecated(message string) tFlag {
+func (f Flag) ShortDeprecated(message string) Flag {
 	f.shortDepr = message
 	return f
 }
 
 // Hidden makes the flag to not be shown in help or usage messages.
-func (f tFlag) Hidden() tFlag {
+func (f Flag) Hidden() Flag {
 	f.hidden = true
 	return f
 }
 
 // pflagAdd adds the flag into the give pflag.FlagSet.
-func (f tFlag) pflagAdd(name string, fs *pflag.FlagSet) {
-	f.pflagAddFlag(name, fs)
+func (f Flag) pflagAdd(name string, fs *pflag.FlagSet) error {
+	if !f.internal {
+		return errors.New("cliff.Flag must be instantiated using cliff.F constructor")
+	}
+	err := f.pflagAddFlag(name, fs)
+	if err != nil {
+		return err
+	}
 	if f.depr != "" {
-		_ = fs.MarkDeprecated(name, f.depr)
+		err = fs.MarkDeprecated(name, f.depr)
+		if err != nil {
+			return fmt.Errorf("mark deprecated: %v", err)
+		}
 	}
 	if f.shortDepr != "" {
-		_ = fs.MarkShorthandDeprecated(name, f.shortDepr)
+		err = fs.MarkShorthandDeprecated(name, f.shortDepr)
+		if err != nil {
+			return fmt.Errorf("mark short deprecated: %v", err)
+		}
 	}
 	if f.hidden {
-		_ = fs.MarkHidden(name)
+		err = fs.MarkHidden(name)
+		if err != nil {
+			return fmt.Errorf("mark hidden: %v", err)
+		}
 	}
+	return nil
 }
 
-func (f tFlag) pflagAddFlag(name string, fs *pflag.FlagSet) {
+func (f Flag) pflagAddFlag(name string, fs *pflag.FlagSet) error {
 	switch def := any(f.def).(type) {
 	case []bool:
 		v := any(f.tar).(*[]bool)
@@ -217,5 +237,8 @@ func (f tFlag) pflagAddFlag(name string, fs *pflag.FlagSet) {
 	case uint:
 		v := any(f.tar).(*uint)
 		fs.UintVarP(v, name, f.short, def, f.help)
+	default:
+		return errors.New("unsupported type")
 	}
+	return nil
 }
