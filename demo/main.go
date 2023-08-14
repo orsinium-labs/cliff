@@ -10,7 +10,7 @@ import (
 type Config struct {
 	host  string
 	port  int
-	https bool
+	debug bool
 }
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 		return cliff.Flags{
 			"host":  cliff.F(&c.host, 0, "127.0.0.1", "host to serve on"),
 			"port":  cliff.F(&c.port, 'p', 8080, "port to listen to"),
-			"https": cliff.F(&c.https, 0, true, "force https"),
+			"debug": cliff.F(&c.debug, 0, false, "run in debug mode"),
 		}
 	}
 	config := cliff.MustParse(os.Stderr, os.Exit, os.Args, flags)

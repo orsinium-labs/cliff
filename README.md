@@ -2,9 +2,13 @@
 
 The simplest and safest golang library for making CLI tools.
 
-## Simplicity
+Features:
 
-...
+* Follows [POSIX argument syntax convention](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html) (flags look `--like-this`).
+* Safe, uses the full power of type safety and generics to detect errors at compilation time (see below)
+* Makes simple simple and hard possible.
+* Reliable, just a thin wrapper around old, popular, and battle-tested [pflag](https://github.com/spf13/pflag/).
+* Can be used together with [flag](https://pkg.go.dev/flag), [pflag](https://github.com/spf13/pflag/), and [cobra](https://github.com/spf13/cobra).
 
 ## Safety
 
@@ -30,17 +34,65 @@ go get github.com/orsinium-labs/cliff
 type Config struct {
   host  string
   port  int
-  https bool
+  debug bool
 }
 
 flags := func(c *Config) cliff.Flags {
   return cliff.Flags{
     "host":  cliff.F(&c.host, 0, "127.0.0.1", "host to serve on"),
     "port":  cliff.F(&c.port, 'p', 8080, "port to listen to"),
-    "https": cliff.F(&c.https, 0, true, "force https"),
+    "debug": cliff.F(&c.debug, 0, false, "run in debug mode"),
   }
 }
 
-config := cliff.MustParse(os.Stderr, os.Args, flags)
+config := cliff.MustParse(os.Stderr, os.Exit, os.Args, flags)
 fmt.Printf("%#v\n", config)
+```
+
+Passing `os` parameters makes side-effects explicit and easy to override in tests, and defining flags inside a function makes it impossible to use the config before initialization.
+
+Usage examples:
+
+```bash
+# show usage and exit with 0
+example --help
+
+# specify some flags
+example --host localhost --debug
+
+# use the short version of a flag
+example -p 80
+
+# try passing invalid flag, will print error and exit with 2
+example -p hi
+```
+
+## Advanced usage
+
+Use cliff to specify flags for a [pflag](https://github.com/spf13/pflag/) flag set:
+
+```go
+flags := cliff.Flags{
+  "host":  cliff.F(&c.host, 0, "127.0.0.1", ""),
+}
+subFlagSet, err := flags.PFlagSet()
+if err != nil {
+  return err
+}
+
+flagSet := pflag.NewFlagSet("example", pflag.ContinueOnError)
+flagSet.AddFlagSet(subFlagSet)
+```
+
+Similarly, use cliff to specify flags for a [cobra](https://github.com/spf13/cobra) command:
+
+```go
+flags := cliff.Flags{
+  "host":  cliff.F(&c.host, 0, "127.0.0.1", ""),
+}
+flagSet, err := flags.PFlagSet()
+if err != nil {
+  return err
+}
+someCmd.PersistentFlags().AddFlagSet(flagSet)
 ```

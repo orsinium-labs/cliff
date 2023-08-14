@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -102,10 +104,11 @@ func (f Flag) Hidden() Flag {
 
 // pflagAdd adds the flag into the give pflag.FlagSet.
 func (f Flag) pflagAdd(name string, fs *pflag.FlagSet) error {
-	if !f.internal {
-		return errors.New("cliff.Flag must be instantiated using cliff.F constructor")
+	err := f.validate(name)
+	if err != nil {
+		return err
 	}
-	err := f.pflagAddFlag(name, fs)
+	err = f.pflagAddFlag(name, fs)
 	if err != nil {
 		return err
 	}
@@ -127,6 +130,40 @@ func (f Flag) pflagAdd(name string, fs *pflag.FlagSet) error {
 			return fmt.Errorf("mark hidden: %v", err)
 		}
 	}
+	return nil
+}
+
+var hasUpper = regexp.MustCompile(`[A-Z]`).FindString
+var isAlNum = regexp.MustCompile(`^[a-zA-Z0-9]$`).MatchString
+var isValidFlag = regexp.MustCompile(`^[a-zA-Z0-9-]+$`).MatchString
+
+func (f Flag) validate(name string) error {
+	if !f.internal {
+		return errors.New("cliff.Flag must be instantiated using cliff.F constructor")
+	}
+
+	// vlaidate flag name
+	if name == "" {
+		return errors.New("flag name must not be empty")
+	}
+	if hasUpper(name) != "" {
+		return errors.New("flag name must be lowercase")
+	}
+	if !isAlNum(name[:1]) {
+		return errors.New("flag name must start with alpha-numeric ASCII character")
+	}
+	if strings.Contains(name, "--") {
+		return errors.New("flag name must not contain --")
+	}
+	if !isValidFlag(name) {
+		return errors.New("flag name can contain only alpha-numeric ASCII characters and dashes")
+	}
+
+	// validate flag shorthand
+	if f.short != "" && !isAlNum(f.short) {
+		return errors.New("flag short name must be an alpha-numeric ASCII character")
+	}
+
 	return nil
 }
 
