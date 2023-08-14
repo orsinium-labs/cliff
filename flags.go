@@ -3,14 +3,18 @@ package cliff
 import (
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/spf13/pflag"
 )
 
-func MustParse[T any](stderr io.Writer, args []string, init func(c *T) Flags) T {
+func MustParse[T any](
+	stderr io.Writer,
+	exit func(int),
+	args []string,
+	init func(c *T) Flags,
+) T {
 	config, err := Parse[T](stderr, args, init)
-	HandleError(err)
+	HandleError(stderr, exit, err)
 	return config
 }
 
@@ -49,13 +53,13 @@ func (fs Flags) PFlagSet(stderr io.Writer, name string) *pflag.FlagSet {
 }
 
 // HandleError interrupts the program if an error occured when parsing arguments.
-func HandleError(err error) {
+func HandleError(stderr io.Writer, exit func(int), err error) {
 	if err == nil {
 		return
 	}
 	if err == pflag.ErrHelp {
-		os.Exit(0)
+		exit(0)
 	}
-	fmt.Println(err)
-	os.Exit(2)
+	fmt.Fprintln(stderr, err)
+	exit(2)
 }

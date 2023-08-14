@@ -21,6 +21,6 @@ func main() {
 			"https": cliff.F(&c.https, 0, true, "force https"),
 		}
 	}
-	config := cliff.MustParse(os.Stderr, os.Args, flags)
+	config := cliff.MustParse(os.Stderr, os.Exit, os.Args, flags)
 	fmt.Printf("%#v\n", config)
 }
