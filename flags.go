@@ -1,8 +1,11 @@
 package cliff
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"regexp"
+	"strings"
 
 	"github.com/spf13/pflag"
 )
@@ -72,12 +75,39 @@ func (fs Flags) PFlagSet(stderr io.Writer, name string) (*pflag.FlagSet, error) 
 	pfs := pflag.NewFlagSet(name, pflag.ContinueOnError)
 	pfs.SetOutput(stderr)
 	for name, flag := range fs {
-		err := flag.AddTo(pfs, name)
+		err := validateName(name)
+		if err != nil {
+			return nil, fmt.Errorf("validate flag name (%s): %v", name, err)
+		}
+		err = flag.AddTo(pfs, name)
 		if err != nil {
 			return nil, fmt.Errorf("add flag %s: %v", name, err)
 		}
 	}
 	return pfs, nil
+}
+
+var hasUpper = regexp.MustCompile(`[A-Z]`).FindString
+var isAlNum = regexp.MustCompile(`^[a-zA-Z0-9]$`).MatchString
+var isValidFlag = regexp.MustCompile(`^[a-zA-Z0-9-]+$`).MatchString
+
+func validateName(name string) error {
+	if name == "" {
+		return errors.New("flag name must not be empty")
+	}
+	if hasUpper(name) != "" {
+		return errors.New("flag name must be lowercase")
+	}
+	if !isAlNum(name[:1]) {
+		return errors.New("flag name must start with alpha-numeric ASCII character")
+	}
+	if strings.Contains(name, "--") {
+		return errors.New("flag name must not contain --")
+	}
+	if !isValidFlag(name) {
+		return errors.New("flag name can contain only alpha-numeric ASCII characters and dashes")
+	}
+	return nil
 }
 
 // HandleError interrupts the program if an error occured when parsing arguments.

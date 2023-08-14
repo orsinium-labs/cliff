@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"regexp"
-	"strings"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -56,8 +54,8 @@ type tPFlag struct {
 
 	depr      string // deprecation message
 	shortDepr string // deprecation message for the shorthand
-	hidden    bool
-	internal  bool // a check that the flag is constructed using the constructor
+	hidden    bool   // don't show the flag in help
+	internal  bool   // a check that the flag is constructed using the constructor
 }
 
 // F creates a new flag.
@@ -92,11 +90,13 @@ func (f tPFlag) Hidden() Flag {
 }
 
 func (f tPFlag) AddTo(fs *pflag.FlagSet, name string) error {
-	err := f.validate(name)
-	if err != nil {
-		return err
+	if !f.internal {
+		return errors.New("cliff.tPFlag must be instantiated using cliff.F constructor")
 	}
-	err = f.pflagAddFlag(name, fs)
+	if f.short != "" && !isAlNum(f.short) {
+		return errors.New("flag short name must be an alpha-numeric ASCII character")
+	}
+	err := f.pflagAddFlag(name, fs)
 	if err != nil {
 		return err
 	}
@@ -118,40 +118,6 @@ func (f tPFlag) AddTo(fs *pflag.FlagSet, name string) error {
 			return fmt.Errorf("mark hidden: %v", err)
 		}
 	}
-	return nil
-}
-
-var hasUpper = regexp.MustCompile(`[A-Z]`).FindString
-var isAlNum = regexp.MustCompile(`^[a-zA-Z0-9]$`).MatchString
-var isValidFlag = regexp.MustCompile(`^[a-zA-Z0-9-]+$`).MatchString
-
-func (f tPFlag) validate(name string) error {
-	if !f.internal {
-		return errors.New("cliff.tPFlag must be instantiated using cliff.F constructor")
-	}
-
-	// vlaidate flag name
-	if name == "" {
-		return errors.New("flag name must not be empty")
-	}
-	if hasUpper(name) != "" {
-		return errors.New("flag name must be lowercase")
-	}
-	if !isAlNum(name[:1]) {
-		return errors.New("flag name must start with alpha-numeric ASCII character")
-	}
-	if strings.Contains(name, "--") {
-		return errors.New("flag name must not contain --")
-	}
-	if !isValidFlag(name) {
-		return errors.New("flag name can contain only alpha-numeric ASCII characters and dashes")
-	}
-
-	// validate flag shorthand
-	if f.short != "" && !isAlNum(f.short) {
-		return errors.New("flag short name must be an alpha-numeric ASCII character")
-	}
-
 	return nil
 }
 

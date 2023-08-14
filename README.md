@@ -9,6 +9,7 @@ Features:
 * Makes simple simple and hard possible.
 * Reliable, just a thin wrapper around old, popular, and battle-tested [pflag](https://github.com/spf13/pflag/).
 * Can be used together with [flag](https://pkg.go.dev/flag), [pflag](https://github.com/spf13/pflag/), and [cobra](https://github.com/spf13/cobra).
+* Supports long and short names for flags, hidden flags, flag deprecation.
 
 ## Safety
 
