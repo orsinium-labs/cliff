@@ -2,6 +2,7 @@ package cliff
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"regexp"
@@ -123,7 +124,7 @@ func HandleError(stderr io.Writer, exit func(int), err error) {
 	if err == nil {
 		return
 	}
-	if err == pflag.ErrHelp {
+	if err == pflag.ErrHelp || err == flag.ErrHelp {
 		exit(0)
 	}
 	fmt.Fprintln(stderr, err)
