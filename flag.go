@@ -43,12 +43,16 @@ type BytesHex []byte
 // BytesBase64 is a slice of bytes represented in CLI as a base64-encoded string.
 type BytesBase64 []byte
 
-// tFlag is a private flag representing all infor about a CLI flag except its name.
+// Flag represents all info about a CLI flag except its name.
 type tFlag struct {
-	T       any
-	Default any
-	Short   string
-	Help    string
+	tar   any    // target where to put the parsed result
+	def   any    // default value to use if flag not specified
+	short string // short alias for the flag
+	help  string // usage message
+
+	depr      string // deprecation message
+	shortDepr string // deprecation message for the shorthand
+	hidden    bool
 }
 
 // F creates a new flag.
@@ -58,120 +62,160 @@ func F[T Constraint](val *T, short Short, def T, help Help) tFlag {
 		shortStr = string(short)
 	}
 	return tFlag{
-		T:       val,
-		Default: def,
-		Short:   shortStr,
-		Help:    string(help),
+		tar:   val,
+		def:   def,
+		short: shortStr,
+		help:  string(help),
+		depr:  "",
 	}
+}
+
+// Deprecated marks the flag as deprecated.
+//
+// It won't be shown in help or usage messages
+// and when the user tries to use it,
+// the deprecation message will be shown.
+func (f tFlag) Deprecated(message string) tFlag {
+	f.depr = message
+	return f
+}
+
+// ShortDeprecated marks the short alias of the flag as deprecated.
+//
+// The short flag won't be shown in help or usage messages
+// and when the user tries to use it,
+// the deprecation message will be shown.
+func (f tFlag) ShortDeprecated(message string) tFlag {
+	f.shortDepr = message
+	return f
+}
+
+// Hidden makes the flag to not be shown in help or usage messages.
+func (f tFlag) Hidden() tFlag {
+	f.hidden = true
+	return f
 }
 
 // pflagAdd adds the flag into the give pflag.FlagSet.
 func (f tFlag) pflagAdd(name string, fs *pflag.FlagSet) {
-	switch def := any(f.Default).(type) {
+	f.pflagAddFlag(name, fs)
+	if f.depr != "" {
+		_ = fs.MarkDeprecated(name, f.depr)
+	}
+	if f.shortDepr != "" {
+		_ = fs.MarkShorthandDeprecated(name, f.shortDepr)
+	}
+	if f.hidden {
+		_ = fs.MarkHidden(name)
+	}
+}
+
+func (f tFlag) pflagAddFlag(name string, fs *pflag.FlagSet) {
+	switch def := any(f.def).(type) {
 	case []bool:
-		v := any(f.T).(*[]bool)
-		fs.BoolSliceVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]bool)
+		fs.BoolSliceVarP(v, name, f.short, def, f.help)
 	case bool:
-		v := any(f.T).(*bool)
-		fs.BoolVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*bool)
+		fs.BoolVarP(v, name, f.short, def, f.help)
 	case []byte:
-		v := any(f.T).(*[]byte)
-		fs.BytesHexVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]byte)
+		fs.BytesHexVarP(v, name, f.short, def, f.help)
 	case BytesHex:
-		v := any(f.T).(*[]byte)
-		fs.BytesHexVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]byte)
+		fs.BytesHexVarP(v, name, f.short, def, f.help)
 	case BytesBase64:
-		v := any(f.T).(*[]byte)
-		fs.BytesBase64VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]byte)
+		fs.BytesBase64VarP(v, name, f.short, def, f.help)
 	case []time.Duration:
-		v := any(f.T).(*[]time.Duration)
-		fs.DurationSliceVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]time.Duration)
+		fs.DurationSliceVarP(v, name, f.short, def, f.help)
 	case time.Duration:
-		v := any(f.T).(*time.Duration)
-		fs.DurationVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*time.Duration)
+		fs.DurationVarP(v, name, f.short, def, f.help)
 	case []float32:
-		v := any(f.T).(*[]float32)
-		fs.Float32SliceVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]float32)
+		fs.Float32SliceVarP(v, name, f.short, def, f.help)
 	case float32:
-		v := any(f.T).(*float32)
-		fs.Float32VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*float32)
+		fs.Float32VarP(v, name, f.short, def, f.help)
 	case []float64:
-		v := any(f.T).(*[]float64)
-		fs.Float64SliceVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]float64)
+		fs.Float64SliceVarP(v, name, f.short, def, f.help)
 	case float64:
-		v := any(f.T).(*float64)
-		fs.Float64VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*float64)
+		fs.Float64VarP(v, name, f.short, def, f.help)
 	case net.IPMask:
-		v := any(f.T).(*net.IPMask)
-		fs.IPMaskVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*net.IPMask)
+		fs.IPMaskVarP(v, name, f.short, def, f.help)
 	case net.IPNet:
-		v := any(f.T).(*net.IPNet)
-		fs.IPNetVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*net.IPNet)
+		fs.IPNetVarP(v, name, f.short, def, f.help)
 	case []net.IP:
-		v := any(f.T).(*[]net.IP)
-		fs.IPSliceVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]net.IP)
+		fs.IPSliceVarP(v, name, f.short, def, f.help)
 	case net.IP:
-		v := any(f.T).(*net.IP)
-		fs.IPVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*net.IP)
+		fs.IPVarP(v, name, f.short, def, f.help)
 	case int16:
-		v := any(f.T).(*int16)
-		fs.Int16VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*int16)
+		fs.Int16VarP(v, name, f.short, def, f.help)
 	case []int32:
-		v := any(f.T).(*[]int32)
-		fs.Int32SliceVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]int32)
+		fs.Int32SliceVarP(v, name, f.short, def, f.help)
 	case int32:
-		v := any(f.T).(*int32)
-		fs.Int32VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*int32)
+		fs.Int32VarP(v, name, f.short, def, f.help)
 	case []int64:
-		v := any(f.T).(*[]int64)
-		fs.Int64SliceVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]int64)
+		fs.Int64SliceVarP(v, name, f.short, def, f.help)
 	case int64:
-		v := any(f.T).(*int64)
-		fs.Int64VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*int64)
+		fs.Int64VarP(v, name, f.short, def, f.help)
 	case int8:
-		v := any(f.T).(*int8)
-		fs.Int8VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*int8)
+		fs.Int8VarP(v, name, f.short, def, f.help)
 	case []int:
-		v := any(f.T).(*[]int)
-		fs.IntSliceVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]int)
+		fs.IntSliceVarP(v, name, f.short, def, f.help)
 	case int:
-		v := any(f.T).(*int)
-		fs.IntVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*int)
+		fs.IntVarP(v, name, f.short, def, f.help)
 	case Count:
-		v := any(f.T).(*int)
-		fs.CountVarP(v, name, f.Short, f.Help)
+		v := any(f.tar).(*int)
+		fs.CountVarP(v, name, f.short, f.help)
 	case []string:
-		v := any(f.T).(*[]string)
-		fs.StringSliceVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]string)
+		fs.StringSliceVarP(v, name, f.short, def, f.help)
 	case map[string]int64:
-		v := any(f.T).(*map[string]int64)
-		fs.StringToInt64VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*map[string]int64)
+		fs.StringToInt64VarP(v, name, f.short, def, f.help)
 	case map[string]int:
-		v := any(f.T).(*map[string]int)
-		fs.StringToIntVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*map[string]int)
+		fs.StringToIntVarP(v, name, f.short, def, f.help)
 	case map[string]string:
-		v := any(f.T).(*map[string]string)
-		fs.StringToStringVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*map[string]string)
+		fs.StringToStringVarP(v, name, f.short, def, f.help)
 	case string:
-		v := any(f.T).(*string)
-		fs.StringVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*string)
+		fs.StringVarP(v, name, f.short, def, f.help)
 	case uint16:
-		v := any(f.T).(*uint16)
-		fs.Uint16VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*uint16)
+		fs.Uint16VarP(v, name, f.short, def, f.help)
 	case uint32:
-		v := any(f.T).(*uint32)
-		fs.Uint32VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*uint32)
+		fs.Uint32VarP(v, name, f.short, def, f.help)
 	case uint64:
-		v := any(f.T).(*uint64)
-		fs.Uint64VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*uint64)
+		fs.Uint64VarP(v, name, f.short, def, f.help)
 	case uint8:
-		v := any(f.T).(*uint8)
-		fs.Uint8VarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*uint8)
+		fs.Uint8VarP(v, name, f.short, def, f.help)
 	case []uint:
-		v := any(f.T).(*[]uint)
-		fs.UintSliceVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*[]uint)
+		fs.UintSliceVarP(v, name, f.short, def, f.help)
 	case uint:
-		v := any(f.T).(*uint)
-		fs.UintVarP(v, name, f.Short, def, f.Help)
+		v := any(f.tar).(*uint)
+		fs.UintVarP(v, name, f.short, def, f.help)
 	}
 }
