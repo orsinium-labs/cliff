@@ -10,7 +10,6 @@ type baseFlag struct {
 	depr      string // deprecation message
 	shortDepr string // deprecation message for the shorthand
 	hidden    bool   // don't show the flag in help
-	internal  bool   // a check that the flag is constructed using the constructor
 }
 
 func (f baseFlag) setProperties(fs *pflag.FlagSet, name string) error {

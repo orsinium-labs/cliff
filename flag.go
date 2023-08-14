@@ -60,11 +60,10 @@ func F[T Constraint](val *T, short Short, def T, help Help) Flag {
 		shortStr = string(short)
 	}
 	return tPFlag{
-		tar:      val,
-		def:      def,
-		short:    shortStr,
-		help:     string(help),
-		baseFlag: baseFlag{internal: true},
+		tar:   val,
+		def:   def,
+		short: shortStr,
+		help:  string(help),
 	}
 }
 
@@ -84,9 +83,6 @@ func (f tPFlag) Hidden() Flag {
 }
 
 func (f tPFlag) AddTo(fs *pflag.FlagSet, name string) error {
-	if !f.internal {
-		return errors.New("cliff.tPFlag must be instantiated using cliff.F constructor")
-	}
 	if f.short != "" && !isAlNum(f.short) {
 		return errors.New("flag short name must be an alpha-numeric ASCII character")
 	}
