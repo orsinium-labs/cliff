@@ -47,8 +47,8 @@ type BytesHex []byte
 // BytesBase64 is a slice of bytes represented in CLI as a base64-encoded string.
 type BytesBase64 []byte
 
-// Flag represents all info about a CLI flag except its name.
-type Flag struct {
+// tPFlag represents all info about a CLI flag except its name.
+type tPFlag struct {
 	tar   any    // target where to put the parsed result
 	def   any    // default value to use if flag not specified
 	short string // short alias for the flag
@@ -66,7 +66,7 @@ func F[T Constraint](val *T, short Short, def T, help Help) Flag {
 	if short != 0 {
 		shortStr = string(short)
 	}
-	return Flag{
+	return tPFlag{
 		tar:      val,
 		def:      def,
 		short:    shortStr,
@@ -76,34 +76,22 @@ func F[T Constraint](val *T, short Short, def T, help Help) Flag {
 	}
 }
 
-// Deprecated marks the flag as deprecated.
-//
-// It won't be shown in help or usage messages
-// and when the user tries to use it,
-// the deprecation message will be shown.
-func (f Flag) Deprecated(message string) Flag {
+func (f tPFlag) Deprecated(message string) Flag {
 	f.depr = message
 	return f
 }
 
-// ShortDeprecated marks the short alias of the flag as deprecated.
-//
-// The short flag won't be shown in help or usage messages
-// and when the user tries to use it,
-// the deprecation message will be shown.
-func (f Flag) ShortDeprecated(message string) Flag {
+func (f tPFlag) ShortDeprecated(message string) Flag {
 	f.shortDepr = message
 	return f
 }
 
-// Hidden makes the flag to not be shown in help or usage messages.
-func (f Flag) Hidden() Flag {
+func (f tPFlag) Hidden() Flag {
 	f.hidden = true
 	return f
 }
 
-// pflagAdd adds the flag into the give pflag.FlagSet.
-func (f Flag) pflagAdd(name string, fs *pflag.FlagSet) error {
+func (f tPFlag) AddTo(fs *pflag.FlagSet, name string) error {
 	err := f.validate(name)
 	if err != nil {
 		return err
@@ -137,9 +125,9 @@ var hasUpper = regexp.MustCompile(`[A-Z]`).FindString
 var isAlNum = regexp.MustCompile(`^[a-zA-Z0-9]$`).MatchString
 var isValidFlag = regexp.MustCompile(`^[a-zA-Z0-9-]+$`).MatchString
 
-func (f Flag) validate(name string) error {
+func (f tPFlag) validate(name string) error {
 	if !f.internal {
-		return errors.New("cliff.Flag must be instantiated using cliff.F constructor")
+		return errors.New("cliff.tPFlag must be instantiated using cliff.F constructor")
 	}
 
 	// vlaidate flag name
@@ -167,7 +155,7 @@ func (f Flag) validate(name string) error {
 	return nil
 }
 
-func (f Flag) pflagAddFlag(name string, fs *pflag.FlagSet) error {
+func (f tPFlag) pflagAddFlag(name string, fs *pflag.FlagSet) error {
 	switch def := any(f.def).(type) {
 	case []bool:
 		v := any(f.tar).(*[]bool)

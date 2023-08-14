@@ -25,6 +25,28 @@ func Parse[T any](stderr io.Writer, args []string, init func(c *T) Flags) (T, er
 	return config, err
 }
 
+type Flag interface {
+	// Deprecated marks the flag as deprecated.
+	//
+	// It won't be shown in help or usage messages
+	// and when the user tries to use it,
+	// the deprecation message will be shown.
+	Deprecated(message string) Flag
+
+	// ShortDeprecated marks the short alias of the flag as deprecated.
+	//
+	// The short flag won't be shown in help or usage messages
+	// and when the user tries to use it,
+	// the deprecation message will be shown.
+	ShortDeprecated(message string) Flag
+
+	// Hidden makes the flag to not be shown in help or usage messages.
+	Hidden() Flag
+
+	// AddTo adds the flag into the give pflag.FlagSet.
+	AddTo(*pflag.FlagSet, string) error
+}
+
 // Flags is a mapping of CLI flag names to the flags.
 type Flags map[string]Flag
 
@@ -49,8 +71,8 @@ func (fs Flags) Parse(stderr io.Writer, args []string) error {
 func (fs Flags) PFlagSet(stderr io.Writer, name string) (*pflag.FlagSet, error) {
 	pfs := pflag.NewFlagSet(name, pflag.ContinueOnError)
 	pfs.SetOutput(stderr)
-	for name, f := range fs {
-		err := f.pflagAdd(name, pfs)
+	for name, flag := range fs {
+		err := flag.AddTo(pfs, name)
 		if err != nil {
 			return nil, fmt.Errorf("add flag %s: %v", name, err)
 		}
