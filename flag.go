@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net"
 	"time"
+	"unsafe"
 
 	"github.com/spf13/pflag"
 )
@@ -25,7 +26,8 @@ type Constraint interface {
 		net.IP | net.IPMask | net.IPNet |
 		string |
 		time.Duration |
-		uint | uint16 | uint32 | uint64 | uint8
+		uint | uint16 | uint32 | uint64 | uint8 |
+		Count | BytesHex | BytesBase64
 }
 
 // Short is a literal character representing shortcut for a flag.
@@ -105,11 +107,13 @@ func (f tPFlag) pflagAddFlag(name string, fs *pflag.FlagSet) error {
 		v := any(f.tar).(*[]byte)
 		fs.BytesHexVarP(v, name, f.short, def, f.help)
 	case BytesHex:
-		v := any(f.tar).(*[]byte)
-		fs.BytesHexVarP(v, name, f.short, def, f.help)
+		v := any(f.tar).(*BytesHex)
+		p := (*[]byte)(unsafe.Pointer(v))
+		fs.BytesHexVarP(p, name, f.short, def, f.help)
 	case BytesBase64:
-		v := any(f.tar).(*[]byte)
-		fs.BytesBase64VarP(v, name, f.short, def, f.help)
+		v := any(f.tar).(*BytesBase64)
+		p := (*[]byte)(unsafe.Pointer(v))
+		fs.BytesBase64VarP(p, name, f.short, def, f.help)
 	case []time.Duration:
 		v := any(f.tar).(*[]time.Duration)
 		fs.DurationSliceVarP(v, name, f.short, def, f.help)
@@ -165,8 +169,9 @@ func (f tPFlag) pflagAddFlag(name string, fs *pflag.FlagSet) error {
 		v := any(f.tar).(*int)
 		fs.IntVarP(v, name, f.short, def, f.help)
 	case Count:
-		v := any(f.tar).(*int)
-		fs.CountVarP(v, name, f.short, f.help)
+		v := any(f.tar).(*Count)
+		p := (*int)(unsafe.Pointer(v))
+		fs.CountVarP(p, name, f.short, f.help)
 	case []string:
 		v := any(f.tar).(*[]string)
 		fs.StringSliceVarP(v, name, f.short, def, f.help)

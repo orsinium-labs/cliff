@@ -10,6 +10,11 @@ import (
 	"github.com/spf13/pflag"
 )
 
+// MustParse parses CLI flags, writes errors and warnings into stderr and exits on error or help.
+//
+// Typical usage:
+//
+//	cliff.MustParse(os.Stderr, os.Exit, os.Args, flags)
 func MustParse[T any](
 	stderr io.Writer,
 	exit func(int),
@@ -21,6 +26,11 @@ func MustParse[T any](
 	return config
 }
 
+// MustParse parses CLI flags, writes warnings into stderr and returns error on error or help.
+//
+// Typical usage:
+//
+//	cliff.Parse(os.Stderr, os.Args, flags)
 func Parse[T any](stderr io.Writer, args []string, init func(c *T) Flags) (T, error) {
 	var config T
 	flags := init(&config)
@@ -29,7 +39,7 @@ func Parse[T any](stderr io.Writer, args []string, init func(c *T) Flags) (T, er
 }
 
 type Flag interface {
-	// Deprecated marks the flag as deprecated.
+	// Mark the flag as deprecated.
 	//
 	// It won't be shown in help or usage messages
 	// and when the user tries to use it,
@@ -55,8 +65,6 @@ type Flags map[string]Flag
 
 // Parse the given arguments.
 //
-// The first argument is the program name.
-//
 // Help and warnings will be written into the given stderr stream.
 //
 // Typical usage:
@@ -70,7 +78,7 @@ func (fs Flags) Parse(stderr io.Writer, args []string) error {
 	return pfs.Parse(args[1:])
 }
 
-// PFlagSet returns a pflag.FlagSet populated with defined flags.
+// PFlagSet returns a [pflag.FlagSet] populated with defined flags.
 func (fs Flags) PFlagSet(stderr io.Writer, name string) (*pflag.FlagSet, error) {
 	pfs := pflag.NewFlagSet(name, pflag.ContinueOnError)
 	pfs.SetOutput(stderr)
@@ -93,19 +101,19 @@ var isValidFlag = regexp.MustCompile(`^[a-zA-Z0-9-]+$`).MatchString
 
 func validateName(name string) error {
 	if name == "" {
-		return errors.New("flag name must not be empty")
+		return errors.New("must not be empty")
 	}
 	if hasUpper(name) != "" {
-		return errors.New("flag name must be lowercase")
+		return errors.New("must be lowercase")
 	}
 	if !isAlNum(name[:1]) {
-		return errors.New("flag name must start with alpha-numeric ASCII character")
+		return errors.New("must start with alpha-numeric ASCII character")
 	}
 	if strings.Contains(name, "--") {
-		return errors.New("flag name must not contain --")
+		return errors.New("must not contain --")
 	}
 	if !isValidFlag(name) {
-		return errors.New("flag name can contain only alpha-numeric ASCII characters and dashes")
+		return errors.New("can contain only alpha-numeric ASCII characters and dashes")
 	}
 	return nil
 }

@@ -17,7 +17,7 @@ type tFuncFlag[T any] struct {
 }
 
 // FuncFlag creates a new flag that is parsed by the given function.
-func FuncFlag[T Constraint](
+func FuncFlag[T any](
 	tar *T,
 	short Short,
 	def T,
@@ -29,6 +29,7 @@ func FuncFlag[T Constraint](
 		shortStr = string(short)
 	}
 	return tFuncFlag[T]{
+		tar:    tar,
 		parser: parser,
 		short:  shortStr,
 		help:   string(help),
@@ -60,7 +61,7 @@ func (f tFuncFlag[T]) AddTo(fs *pflag.FlagSet, name string) error {
 		if err != nil {
 			return err
 		}
-		f.tar = &val
+		*f.tar = val
 		return nil
 	}
 

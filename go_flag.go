@@ -9,12 +9,12 @@ import (
 // tGoFlag represents all info about a CLI flag except its name.
 type tGoFlag struct {
 	baseFlag
-	flag  flag.Flag
+	flag  *flag.Flag
 	short string // short alias for the flag
 }
 
 // GoFlag creates a new flag from an stdlib [flag.Flag].
-func GoFlag[T Constraint](short Short, flag flag.Flag) Flag {
+func GoFlag(short Short, flag *flag.Flag) Flag {
 	shortStr := ""
 	if short != 0 {
 		shortStr = string(short)
@@ -41,7 +41,7 @@ func (f tGoFlag) Hidden() Flag {
 }
 
 func (f tGoFlag) AddTo(fs *pflag.FlagSet, name string) error {
-	pf := pflag.PFlagFromGoFlag(&f.flag)
+	pf := pflag.PFlagFromGoFlag(f.flag)
 	pf.Name = name
 	pf.Shorthand = f.short
 	fs.AddFlag(pf)

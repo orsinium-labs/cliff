@@ -2,16 +2,17 @@
 
 The simplest and safest golang library for making CLI tools.
 
-Features:
+😎 Features:
 
-* Follows [POSIX argument syntax convention](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html) (flags look `--like-this`).
-* Safe, uses the full power of type safety and generics to detect errors at compilation time (see below)
-* Makes simple simple and hard possible.
-* Reliable, just a thin wrapper around old, popular, and battle-tested [pflag](https://github.com/spf13/pflag/).
-* Can be used together with [flag](https://pkg.go.dev/flag), [pflag](https://github.com/spf13/pflag/), and [cobra](https://github.com/spf13/cobra).
-* Supports long and short names for flags, hidden flags, flag deprecation.
+* 📔 Follows [POSIX argument syntax convention](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html) (flags look `--like-this`).
+* 🛡 Safe, uses the full power of type safety and generics to detect errors at compilation time (see below)
+* 🔨 Makes simple simple and hard possible.
+* 💪 Reliable, just a thin wrapper around old, popular, and battle-tested [pflag](https://github.com/spf13/pflag/).
+* 🍸 Can be mixed together with [flag](https://pkg.go.dev/flag), [pflag](https://github.com/spf13/pflag/), and [cobra](https://github.com/spf13/cobra).
+* 🔋 Supports long and short names for flags, hidden flags, flag deprecation.
+* 📑 Well-documented, with examples for every function.
 
-## Safety
+## 🛡 Safety
 
 The following is checked at compilation time:
 
@@ -23,13 +24,13 @@ The following is checked at compilation time:
 * You pass pointers, not values, to flag targets.
 * You use only types supported by the library.
 
-## Installation
+## 📦 Installation
 
 ```bash
 go get github.com/orsinium-labs/cliff
 ```
 
-## Usage
+## 🛠️ Usage
 
 ```go
 type Config struct {
@@ -68,7 +69,7 @@ example -p 80
 example -p hi
 ```
 
-## Advanced usage
+## 🔌 Integrating with other packages
 
 Use cliff to specify flags for a [pflag](https://github.com/spf13/pflag/) flag set:
 
@@ -96,4 +97,14 @@ if err != nil {
   return err
 }
 someCmd.PersistentFlags().AddFlagSet(flagSet)
+```
+
+Use stdlib [flag](https://pkg.go.dev/flag) flags with cliff:
+
+```go
+var debug bool
+flag.BoolVar(&debug, "debug", false, "run in debug mode")
+cliff.Flags{
+   "debug": cliff.GoFlag('d', flag.Lookup("debug")),
+}
 ```
