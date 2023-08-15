@@ -52,11 +52,10 @@ func (f tFuncFlag[T]) AddTo(fs *pflag.FlagSet, name string) error {
 
 	gfs := flag.NewFlagSet("", flag.ContinueOnError)
 	gfs.Func(name, f.help, patched)
-	gfs.VisitAll(func(goflag *flag.Flag) {
-		pf := pflag.PFlagFromGoFlag(goflag)
-		pf.Name = name
-		pf.Shorthand = f.short
-		fs.AddFlag(pf)
-	})
+	goflag := gfs.Lookup(name)
+	pf := pflag.PFlagFromGoFlag(goflag)
+	pf.Name = name
+	pf.Shorthand = f.short
+	fs.AddFlag(pf)
 	return nil
 }

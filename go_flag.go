@@ -1,6 +1,7 @@
 package cliff
 
 import (
+	"errors"
 	"flag"
 
 	"github.com/spf13/pflag"
@@ -26,6 +27,9 @@ func GoFlag(short Short, flag *flag.Flag) Flag {
 }
 
 func (f tGoFlag) AddTo(fs *pflag.FlagSet, name string) error {
+	if f.short != "" && !isAlNum(f.short) {
+		return errors.New("flag short name must be an alpha-numeric ASCII character")
+	}
 	pf := pflag.PFlagFromGoFlag(f.flag)
 	pf.Name = name
 	pf.Shorthand = f.short
