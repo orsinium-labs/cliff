@@ -1,5 +1,7 @@
 # 🏔 cliff
 
+[ [📄 docs](https://pkg.go.dev/github.com/orsinium-labs/cliff) ] [ [🧑‍💻️ github](https://github.com/orsinium-labs/cliff) ] [ [❤️ sponsor](https://github.com/sponsors/orsinium) ]
+
 The simplest and safest golang library for making CLI tools.
 
 😎 Features:
