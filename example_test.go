@@ -110,6 +110,41 @@ func ExampleFlag_Deprecated() {
 	// localhost:80
 }
 
+func ExampleFlag_ShortDeprecated() {
+	type Config struct{ host string }
+	flags := func(c *Config) cliff.Flags {
+		return cliff.Flags{
+			"host": cliff.F(&c.host, 'h', "127.0.0.1",
+				"host to serve on").ShortDeprecated("use --host instead"),
+		}
+	}
+	args := []string{"example", "-h", "localhost"}
+	config := cliff.MustParse(os.Stdout, os.Exit, args, flags)
+	fmt.Println(config.host)
+
+	// Output:
+	// Flag shorthand -h has been deprecated, use --host instead
+	// localhost
+}
+
+func ExampleFlags_FlagSet() {
+	var host string
+	var debug bool
+	flags := cliff.Flags{
+		"host": cliff.F(&host, 0, "127.0.0.1", "host to serve on"),
+	}
+
+	fs, err := flags.FlagSet(os.Stderr, "example")
+	fs.BoolVar(&debug, "debug", false, "run in debug mode")
+	cliff.HandleError(os.Stderr, os.Exit, err)
+	args := []string{"-host", "localhost", "-debug"}
+	err = fs.Parse(args)
+	cliff.HandleError(os.Stderr, os.Exit, err)
+
+	fmt.Printf("%s %v\n", host, debug)
+	// Output: localhost true
+}
+
 func ExampleGoFlag() {
 	type Config struct{ host string }
 	var debug bool
