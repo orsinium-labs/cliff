@@ -86,7 +86,7 @@ func ExampleHandleError() {
 	// Output: localhost
 }
 
-func ExampleFlag() {
+func ExampleFlag_Deprecated() {
 	type Config struct {
 		host string
 		port int

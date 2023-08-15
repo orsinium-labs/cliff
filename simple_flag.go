@@ -48,7 +48,6 @@ type BytesBase64 []byte
 
 // tPFlag represents all info about a CLI flag except its name.
 type tPFlag struct {
-	baseFlag
 	tar   any    // target where to put the parsed result
 	def   any    // default value to use if flag not specified
 	short string // short alias for the flag
@@ -61,27 +60,13 @@ func F[T Constraint](val *T, short Short, def T, help Help) Flag {
 	if short != 0 {
 		shortStr = string(short)
 	}
-	return tPFlag{
+	setter := tPFlag{
 		tar:   val,
 		def:   def,
 		short: shortStr,
 		help:  string(help),
 	}
-}
-
-func (f tPFlag) Deprecated(message string) Flag {
-	f.depr = message
-	return f
-}
-
-func (f tPFlag) ShortDeprecated(message string) Flag {
-	f.shortDepr = message
-	return f
-}
-
-func (f tPFlag) Hidden() Flag {
-	f.hidden = true
-	return f
+	return Flag{setter: setter}
 }
 
 func (f tPFlag) AddTo(fs *pflag.FlagSet, name string) error {
@@ -92,7 +77,7 @@ func (f tPFlag) AddTo(fs *pflag.FlagSet, name string) error {
 	if err != nil {
 		return err
 	}
-	return f.setProperties(fs, name)
+	return nil
 }
 
 func (f tPFlag) pflagAddFlag(name string, fs *pflag.FlagSet) error {

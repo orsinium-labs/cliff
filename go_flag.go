@@ -8,7 +8,6 @@ import (
 
 // tGoFlag represents all info about a CLI flag except its name.
 type tGoFlag struct {
-	baseFlag
 	flag  *flag.Flag
 	short string // short alias for the flag
 }
@@ -19,25 +18,11 @@ func GoFlag(short Short, flag *flag.Flag) Flag {
 	if short != 0 {
 		shortStr = string(short)
 	}
-	return tGoFlag{
+	setter := tGoFlag{
 		flag:  flag,
 		short: shortStr,
 	}
-}
-
-func (f tGoFlag) Deprecated(message string) Flag {
-	f.depr = message
-	return f
-}
-
-func (f tGoFlag) ShortDeprecated(message string) Flag {
-	f.shortDepr = message
-	return f
-}
-
-func (f tGoFlag) Hidden() Flag {
-	f.hidden = true
-	return f
+	return Flag{setter: setter}
 }
 
 func (f tGoFlag) AddTo(fs *pflag.FlagSet, name string) error {
@@ -45,5 +30,5 @@ func (f tGoFlag) AddTo(fs *pflag.FlagSet, name string) error {
 	pf.Name = name
 	pf.Shorthand = f.short
 	fs.AddFlag(pf)
-	return f.setProperties(fs, name)
+	return nil
 }

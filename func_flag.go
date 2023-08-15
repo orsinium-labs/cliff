@@ -9,7 +9,6 @@ import (
 
 // tGoFlag represents all info about a CLI flag except its name.
 type tFuncFlag[T any] struct {
-	baseFlag
 	tar    *T
 	parser func(string) (T, error)
 	short  string // short alias for the flag
@@ -28,27 +27,13 @@ func FuncFlag[T any](
 	if short != 0 {
 		shortStr = string(short)
 	}
-	return tFuncFlag[T]{
+	setter := tFuncFlag[T]{
 		tar:    tar,
 		parser: parser,
 		short:  shortStr,
 		help:   string(help),
 	}
-}
-
-func (f tFuncFlag[T]) Deprecated(message string) Flag {
-	f.depr = message
-	return f
-}
-
-func (f tFuncFlag[T]) ShortDeprecated(message string) Flag {
-	f.shortDepr = message
-	return f
-}
-
-func (f tFuncFlag[T]) Hidden() Flag {
-	f.hidden = true
-	return f
+	return Flag{setter: setter}
 }
 
 func (f tFuncFlag[T]) AddTo(fs *pflag.FlagSet, name string) error {
@@ -73,5 +58,5 @@ func (f tFuncFlag[T]) AddTo(fs *pflag.FlagSet, name string) error {
 		pf.Shorthand = f.short
 		fs.AddFlag(pf)
 	})
-	return f.setProperties(fs, name)
+	return nil
 }
