@@ -1,4 +1,4 @@
-# cliff
+# 🏔 cliff
 
 The simplest and safest golang library for making CLI tools.
 
@@ -129,11 +129,11 @@ cliff.Flags{
 
 ## 🤔 QnA
 
-1. **Q: Why to make yet another library?** A: All the big CLI libraries in Go (like [flag] and [pflag]) were born long before generics, and so their API is full of messy functions for each possible variable type like `Float64SliceVarP`. The main goal of the project is to make the API nice, small, and clean. And along the way I had opportunity to improve quite a few things in terms of safety and best practices by stripping away global state and side-effects and using maps and closures.
-1. **Q: Why it doesn't support subcommands, autocomplete for all shells, aliases, env vars, config files, and all other features I can't live without?** A: The project is designed to be simple and reliable for small projects and simple CLIs, a better version of [pflag]. If you need more, take a look at [ff], [kong](https://github.com/alecthomas/kong), [cobra], and [urfave](https://github.com/urfave/cli).
-1. **Q: How can I contribute?** If you found a bug or want to improve something a bit, please, send a PR, and I'll merge it. I'm easy to agree with and I usually merge everything within a day.
-1. **Q: Why there are so many ways to do things?** A: The only function you need to use is `cliff.MustParse`, and for that you'll natuarally need `cliff.Flags` and `cliff.F`. That's it. Everything elsle is here for the situations when you need to mix cliff with another library, emit results into multiple variables, parse some tricky custom values, and so on. Exposing all these things is the cost of flexibility.
-1. **Q: Rust is better.** I think [clap](https://github.com/clap-rs/clap) is pretty neat and I like the idea that you can define a single struct with some fields and their attributes and the CLI is magically generated for it. However, while Rust has a standard syntax for such attributes and powerful compile-time macros, in Go we have to use struct field tags like in [encoding/json](https://pkg.go.dev/encoding/json) and that is easy to mess up and doesn't provide any compile-time guarantees.
+1. 🤷 **Q: Why to make yet another library?** A: All the big CLI libraries in Go (like [flag] and [pflag]) were born long before generics, and so their API is full of messy functions for each possible variable type like `Float64SliceVarP`. The main goal of the project is to make the API nice, small, and clean. And along the way I had opportunity to improve quite a few things in terms of safety and best practices by stripping away global state and side-effects and using maps and closures.
+1. 😡 **Q: Why it doesn't support subcommands, autocomplete for all shells, aliases, env vars, config files, and all other features I can't live without?** A: The project is designed to be simple and reliable for small projects and simple CLIs, a better version of [pflag]. If you need more, take a look at [ff], [kong](https://github.com/alecthomas/kong), [cobra], and [urfave/cli](https://github.com/urfave/cli).
+1. 🤝 **Q: How can I contribute?** If you found a bug or want to improve something a bit, please, send a PR, and I'll merge it. I'm easy to agree with and I usually merge everything within a day.
+1. 🕵 **Q: Why there are so many ways to do things?** A: The only function you need to use is `cliff.MustParse`, and for that you'll natuarally need `cliff.Flags` and `cliff.F`. That's it. Everything elsle is here for the situations when you need to mix cliff with another library, emit results into multiple variables, parse some tricky custom values, and so on. Exposing all these things is the cost of flexibility.
+1. 🦀 **Q: Rust is better.** I think [clap](https://github.com/clap-rs/clap) is pretty neat and I like the idea that you can define a single struct with some fields and their attributes and the CLI is magically generated for it. However, while Rust has a standard syntax for such attributes and powerful compile-time macros, in Go we have to use struct field tags like in [encoding/json](https://pkg.go.dev/encoding/json) and that is easy to mess up and doesn't provide any compile-time guarantees.
 
 [pflag]: https://github.com/spf13/pflag/
 [flag]: https://pkg.go.dev/flag
