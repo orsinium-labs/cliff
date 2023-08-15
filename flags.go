@@ -11,6 +11,10 @@ import (
 	"github.com/spf13/pflag"
 )
 
+var hasUpper = regexp.MustCompile(`[A-Z]`).FindString
+var isAlNum = regexp.MustCompile(`^[a-zA-Z0-9]$`).MatchString
+var isValidFlag = regexp.MustCompile(`^[a-zA-Z0-9-]+$`).MatchString
+
 // MustParse parses CLI flags, writes errors and warnings into stderr and exits on error or help.
 //
 // Typical usage:
@@ -89,10 +93,6 @@ func (fs Flags) PFlagSet(stderr io.Writer, name string) (*pflag.FlagSet, error) 
 	return pfs, nil
 }
 
-var hasUpper = regexp.MustCompile(`[A-Z]`).FindString
-var isAlNum = regexp.MustCompile(`^[a-zA-Z0-9]$`).MatchString
-var isValidFlag = regexp.MustCompile(`^[a-zA-Z0-9-]+$`).MatchString
-
 func validateName(name string) error {
 	if name == "" {
 		return errors.New("must not be empty")
@@ -115,7 +115,7 @@ func validateName(name string) error {
 	return nil
 }
 
-// HandleError interrupts the program if an error occured when parsing arguments.
+// HandleError interrupts the program if an error occurred when parsing arguments.
 func HandleError(stderr io.Writer, exit func(int), err error) {
 	if err == nil {
 		return
