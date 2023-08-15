@@ -57,6 +57,21 @@ func (fs Flags) Parse(stderr io.Writer, args []string) error {
 	return pfs.Parse(args[1:])
 }
 
+func (fs Flags) FlagSet(stderr io.Writer, name string) (*flag.FlagSet, error) {
+	pfs, err := fs.PFlagSet(stderr, name)
+	if err != nil {
+		return nil, err
+	}
+	gfs := flag.NewFlagSet(name, flag.ContinueOnError)
+	pfs.VisitAll(func(pf *pflag.Flag) {
+		gfs.Var(pf.Value, pf.Name, pf.Usage)
+		if pf.Shorthand != "" {
+			gfs.Var(pf.Value, pf.Shorthand, pf.Usage)
+		}
+	})
+	return gfs, nil
+}
+
 // PFlagSet returns a [pflag.FlagSet] populated with defined flags.
 func (fs Flags) PFlagSet(stderr io.Writer, name string) (*pflag.FlagSet, error) {
 	pfs := pflag.NewFlagSet(name, pflag.ContinueOnError)
@@ -90,6 +105,9 @@ func validateName(name string) error {
 	}
 	if strings.Contains(name, "--") {
 		return errors.New("must not contain --")
+	}
+	if strings.Contains(name, "=") {
+		return errors.New("must not contain =")
 	}
 	if !isValidFlag(name) {
 		return errors.New("can contain only alpha-numeric ASCII characters and dashes")
