@@ -1,6 +1,6 @@
 # 🏔 cliff
 
-[ [📄 docs](https://pkg.go.dev/github.com/orsinium-labs/cliff) ] [ [🧑‍💻️ github](https://github.com/orsinium-labs/cliff) ] [ [❤️ sponsor](https://github.com/sponsors/orsinium) ]
+[ [📄 docs](https://pkg.go.dev/github.com/orsinium-labs/cliff) ] [ [🐙 github](https://github.com/orsinium-labs/cliff) ] [ [❤️ sponsor](https://github.com/sponsors/orsinium) ]
 
 The simplest and safest golang library for making CLI tools.
 
@@ -30,6 +30,8 @@ Also in runtime:
 
 * Never panics.
 * Makes sure all flag names and short names follow POSIX recommendations.
+
+Read the blog post to learn more: [Writing safe-to-use Go libraries](https://blog.orsinium.dev/posts/go/safe-api/).
 
 ## 📦 Installation
 
